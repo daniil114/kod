@@ -1,7 +1,11 @@
 import logging
 
+from pyexpat.errors import messages
 from telegram import ForceReply, Update
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
+from enum import Enum
+from api import gpt, image
+from config import BOT_KEY1
 
 # Enable logging
 logging.basicConfig(
@@ -16,6 +20,12 @@ logger = logging.getLogger(__name__)
 import shelve
 
 
+
+class ModelEnum(Enum):
+    gpt_text = 1
+    gpt_image = 2
+
+
 # Define a few command handlers. These usually take the two arguments update and
 # context.
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -28,7 +38,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         user_data = {
             "user_name": user_name,
             "subs": "Free",
-            "tokens": 0
+            "tokens": 20,
+            "model": ModelEnum.gpt_text.value
         }
      pandora[str(user_id)] = user_data
     await update.message.reply_text(f"Ты можешь писать мне, и я отвечу. Пиши уже!!! {pandora[str(user_id)]["user_name"]}")
@@ -40,8 +51,28 @@ async  def profile(update: Update) -> None:
     pandora = shelve.open("pandora")
     subscription_type = pandora[str(user_id)]["subs"]
     tokens = pandora[str(user_id)]["tokens"]
+    gpt_model = pandora[user_id]["model"]
     name = pandora[str(user_id)]["user_name"]
     profile_text = ()
+    if tokens > 0:
+        if gpt_model == ModelEnum.gpt_text.value:
+            message = update.message.text
+            answer = gpt(message)
+            await update.message.reply_text(answer)
+        if gpt_model == ModelEnum.gpt_text.value:
+            message = update.message.text
+            answer = image(message)
+            await update.message.reply_photo(
+                photo=answer[0],
+                caption=answer[1]
+            )
+    else:
+        mess = "Пополните баланс токенов в /store"
+        await update.message.reply_text(mess)
+
+
+
+
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     help_text = (
         f"Это ваш профиль. 🫠\n"

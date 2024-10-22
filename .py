@@ -1,8 +1,12 @@
 import logging
+import shelve
+from gc import callbacks
 
 from pyexpat.errors import messages
-from telegram import ForceReply, Update
-from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
+from select import select
+from telegram import ForceReply, Update, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram.ext import (Application, CommandHandler, ContextTypes, MessageHandler, filters, CallbackContext,
+                          CallbackQueryHandler)
 from enum import Enum
 from api import gpt, image
 from config import BOT_KEY1
@@ -15,9 +19,6 @@ logging.basicConfig(
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
-
-
-import shelve
 
 
 
@@ -40,6 +41,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
             "subs": "Free",
             "tokens": 20,
             "model": ModelEnum.gpt_text.value
+
         }
      pandora[str(user_id)] = user_data
     await update.message.reply_text(f"Ты можешь писать мне, и я отвечу. Пиши уже!!! {pandora[str(user_id)]["user_name"]}")
@@ -69,6 +71,48 @@ async  def profile(update: Update) -> None:
     else:
         mess = "Пополните баланс токенов в /store"
         await update.message.reply_text(mess)
+
+
+    new_keyboard = [
+        [InlineKeyboardButton("GPT 3.5", callback_data="1")],
+        [InlineKeyboardButton("Stable Diffusion", callback_data="2")]
+    ]
+
+for row in new_keyboard:
+    for button in row
+        if button.callback_data == selected_option:
+            new_button = InlineKeyboardButton(f"🐔 {button.text}"), callback_data=button.callback_data)
+            row[row.index(button)] = new_button
+
+
+
+
+async def mode(update: Update, context: CallbackContext):
+    keyboard = [
+        [InlineKeyboardButton("GPT 3.5", callback_data="1")],
+        [InlineKeyboardButton("Stable Diffusion", callback_data="2")]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text("Тут вы можете сменить модель нейросетей", reply_markup=reply_markup)
+
+
+
+
+async def button(update: Update, context: CallbackContext):
+    pandora = shelve.open("pandora")
+    query = update.callback_query
+    mode_gpt = query.data
+    user_id_chat = str(query.from_user.id)
+    user_model = pandora[user_id_chat]
+    user_model["model"] = int(mode_gpt)
+    pandora[user_id_chat] = user_model
+    selected_option = query.data
+    pandora.close()
+
+
+
+
+
 
 
 

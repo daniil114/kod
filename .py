@@ -1,6 +1,6 @@
+
 import logging
 import shelve
-from gc import callbacks
 
 from pyexpat.errors import messages
 from select import select
@@ -9,7 +9,8 @@ from telegram.ext import (Application, CommandHandler, ContextTypes, MessageHand
                           CallbackQueryHandler)
 from enum import Enum
 from api import gpt, image
-from config import BOT_KEY1
+
+from config import BOT_KEY
 
 # Enable logging
 logging.basicConfig(
@@ -39,11 +40,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         user_data = {
             "user_name": user_name,
             "subs": "Free",
-            "tokens": 20,
+            "tokens": 0,
             "model": ModelEnum.gpt_text.value
-
         }
-     pandora[str(user_id)] = user_data
+    pandora[str(user_id)] = user_data
     await update.message.reply_text(f"Ты можешь писать мне, и я отвечу. Пиши уже!!! {pandora[str(user_id)]["user_name"]}")
     pandora.close()
 
@@ -55,36 +55,38 @@ async  def profile(update: Update) -> None:
     tokens = pandora[str(user_id)]["tokens"]
     gpt_model = pandora[user_id]["model"]
     name = pandora[str(user_id)]["user_name"]
-    profile_text = ()
-    if tokens > 0:
-        if gpt_model == ModelEnum.gpt_text.value:
-            message = update.message.text
-            answer = gpt(message)
-            await update.message.reply_text(answer)
-        if gpt_model == ModelEnum.gpt_text.value:
-            message = update.message.text
-            answer = image(message)
-            await update.message.reply_photo(
-                photo=answer[0],
-                caption=answer[1]
-            )
-    else:
-        mess = "Пополните баланс токенов в /store"
-        await update.message.reply_text(mess)
+    profile_text = (
+        f"Это ваш профиль. 🫠\n"
+        f"ID: {user_id}\n"
+        f"Подписка: {subscription_type}\n\n"
+        f"Лимиты: {tokens} token"
+        "Чтобы начать, пиши /start \n"
+        "За помощью пиши /help \n"
+    )
+    pandora.close()
+    await update.message.reply_text(profile_text)
 
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    help_text = (
+            "Для покупи токенов /store \n"
+            "Для просмотра информации о вашем аккаунте /profile \n"
+            "Для смены модели GPT /mode \n"
+        )
+    await update.message.reply_text(help_text)
 
-    new_keyboard = [
-        [InlineKeyboardButton("GPT 3.5", callback_data="1")],
-        [InlineKeyboardButton("Stable Diffusion", callback_data="2")]
-    ]
-
-for row in new_keyboard:
-    for button in row
-        if button.callback_data == selected_option:
-            new_button = InlineKeyboardButton(f"🐔 {button.text}"), callback_data=button.callback_data)
-            row[row.index(button)] = new_button
-
-
+async def store(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user = update.effective_user
+    user_id = str(user.id)
+    await update.message.reply_text("Добро пожаловать в магазин! Ты приобрел 20 токенов")
+    pandora = shelve.open("pandora")
+    user_data = {
+            "user_name": user.full_name,
+            "subs": "VIP",
+            "tokens": int(pandora[user_id]["tokens"]) + 20,
+            "model": ModelEnum.gpt_image.value
+        }
+    pandora[user_id] = user_data
+    pandora.close()
 
 
 async def mode(update: Update, context: CallbackContext):
@@ -94,8 +96,6 @@ async def mode(update: Update, context: CallbackContext):
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text("Тут вы можете сменить модель нейросетей", reply_markup=reply_markup)
-
-
 
 
 async def button(update: Update, context: CallbackContext):
@@ -109,32 +109,44 @@ async def button(update: Update, context: CallbackContext):
     selected_option = query.data
     pandora.close()
 
+    new_keyboard = [
+        [InlineKeyboardButton("GPT 3.5", callback_data="1")],
+        [InlineKeyboardButton("Stable Diffusion", callback_data="2")]
+    ]
 
+    for row in new_keyboard:
+        for button in row:
+            if button.callback_data == mode_gpt:
+                new_button = InlineKeyboardButton(f"✅ {button.text}", callback_data=button.callback_data)
+                row[row.index(button)] = new_button
 
-
-
-
-
-
-
-async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    help_text = (
-        f"Это ваш профиль. 🫠\n"
-        f"ID: {user_id}\n"
-        f"Подписка: {subscription_type}\n\n"
-        f"Лимиты: {tokens} token"
-        "Чтобы начать, пиши /start \n"
-        "За помощью пиши /help \n"
+            reply_markup = InlineKeyboardMarkup(new_keyboard)
+    await query.edit_message_text(
+        text="Тут вы можете сменить модель нейросетей",
+        reply_markup=reply_markup
     )
-    """Send a message when the command /help is issued."""
-    await update.message.reply_text(help_text)
 
-
-async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    message = update.message.text
-    """Echo the user message."""
-    await update.message.reply_text(message)
-
+async def process_message(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user = update.effective_user
+    user_id = str(user.id)
+    pandora = shelve.open("pandora")
+    tokens = pandora[user_id]["tokens"]
+    gpt_model = pandora[user_id]["model"]
+    if tokens > 0:
+        if gpt_model == ModelEnum.gpt_text.value:
+            message = update.message.text
+            answer = gpt(message)
+            await update.message.reply_text(answer)
+        if gpt_model == ModelEnum.gpt_image.value:
+            message = update.message.text
+            answer = image(message)
+            await update.message.reply_photo(
+                photo=answer[0],
+                caption=answer[1]
+            )
+    else:
+        mess = "Пополните баланс токенов в /store"
+        await update.message.reply_text(mess)
 
 
 
@@ -145,11 +157,14 @@ def main() -> None:
 
     # on different commands - answer in Telegram
     application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("mode", mode))
+    application.add_handler(CallbackQueryHandler(button))
+    application.add_handler(CommandHandler("store", store))
     application.add_handler(CommandHandler("profile", profile))
     application.add_handler(CommandHandler("help", help_command))
 
     # on non command i.e message - echo the message on Telegram
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, echo))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, process_message))
 
     # Run the bot until the user presses Ctrl-C
     application.run_polling(allowed_updates=Update.ALL_TYPES)

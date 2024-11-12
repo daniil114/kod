@@ -1,3 +1,8 @@
+import shelve
+import time
+from audioop import reverse
+from itertools import count
+
 import pygame
 import random
 
@@ -24,9 +29,34 @@ def Your_score(score):
     dis.blit(value, [0,0])
 
 
+def update_score(name, score):
+    lead = shelve.open("snake_scores")
+    if name not in lead.keys():
+        lead.update({name:score})
+    else:
+        lead[name] = score
+    lead.close()
+
+
+
+def output_score():
+    lead = shelve.open("snake_scores")
+    count = 1
+    for scores in lead.values(), reverse=True:
+        print(f" {count} {scores}")
+        count += 1
+    lead.close()
+
+
 def our_snake(snake_block, snake_list):
     for x in snake_list:
         pygame.draw.rect(dis, black, [x[0], x[1], snake_block, snake_block])
+
+
+def pause_screen():
+    dis.fill(black)
+    message("Игра приостановлена. Нажмите англ P или З русс для возобнавления", white)
+    pygame.display.update()
 
 
 def message(msg, color):
@@ -34,7 +64,8 @@ def message(msg, color):
     dis.blit(mesg, [dis_width / 6, dis_height / 3])
 
 
-def gameLoop():
+def gameLoop(name):
+    paused = False
     game_over = False
     game_close = False
     x1 = dis_width / 2
@@ -58,10 +89,11 @@ def gameLoop():
                             game_over = True
                             game_close = False
                         if event.key == pygame.K_c:
-                            gameLoop()
+                            gameLoop(name)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 game_over = True
+                update_score(name, Lenght_of_snake-1)
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT or event.key == pygame.K_a:
                     x1_change = -snake_block
@@ -75,7 +107,10 @@ def gameLoop():
                 elif event.key == pygame.K_DOWN or event.key == pygame.K_s:
                     y1_change = snake_block
                     x1_change = 0
-        if x1 >= dis_width or x1 < 0 or y1 >= dis_height or y1 < 0:
+                elif event.key == pygame.K_p:
+                    paused = not paused
+        if not paused:
+           if x1 >= dis_width or x1 < 0 or y1 >= dis_height or y1 < 0:
             game_over = True
         x1 += x1_change
         y1 += y1_change
@@ -90,7 +125,7 @@ def gameLoop():
         for x in snake_List[:-1]:
             if x == snake_Head:
                 game_over = True
-                your_score = []
+                name, Lenght_of_snake - 1
         our_snake(snake_block, snake_List)
         Your_score(Lenght_of_snake - 1)
         pygame.display.update()
@@ -100,7 +135,10 @@ def gameLoop():
             Lenght_of_snake += 1
         clock.tick(snake_speed)
     pygame.quit()
+    output_score()
     quit()
 
+
 if __name__ == "__main__":
-    gameLoop()
+    name = input("Введите имя")
+    gameLoop(name=name)

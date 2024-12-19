@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, redirect, request, Response, users
+from flask import Flask, render_template, redirect, request, Response
 from models import User, Education, Contact, db
 from werkzeug.utils import secure_filename
 
@@ -22,10 +22,6 @@ def create_app():
 app = create_app()
 
 
-@app.route("/")
-def index():
-    return render_template("index.html")
-
 @app.route("/create", methods=['GET', 'POST'])
 def creates():
     if request.method == 'POST':
@@ -40,6 +36,9 @@ def creates():
                               granduation_year=request.form['graduation_year'],
                               link=request.form['link'],
                               user=user)
+        contact = Contact(phone=request.form["phone"],
+                          tg=request.form["tg"],
+                          user=user)
         user.education.append(education)
         try:
             db.session.add(user)
@@ -58,10 +57,10 @@ def get_img(id):
 
     return Response(pic.pic, mimetype=pic.mimetype)
 
-@app.route("<int:id>")
+@app.route("/<int:id>")
 def profile(id):
     user = User.query.get(id)
-    users = Users.query.get(id)
+    users = User.query.all()
     educations = user.education.all() if user else None
     return render_template('index.html', users=users, user=user, educations=educations)
 

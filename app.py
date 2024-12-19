@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, redirect, request, Response
+from flask import Flask, render_template, redirect, request, Response, users
 from models import User, Education, Contact, db
 from werkzeug.utils import secure_filename
 
@@ -61,8 +61,9 @@ def get_img(id):
 @app.route("<int:id>")
 def profile(id):
     user = User.query.get(id)
+    users = Users.query.get(id)
     educations = user.education.all() if user else None
-    return render_template('index.html', user=user, educations=educations)
+    return render_template('index.html', users=users, user=user, educations=educations)
 
 
 @app.route("/")
@@ -72,4 +73,4 @@ def index():
     return render_template('index.html', user=user, educations=educations)
 
 if __name__ == "__main__":
-    app.run(debug=True)rue)
+    app.run(debug=True)

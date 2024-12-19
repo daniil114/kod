@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{%block content %}
+<h2>Добавление пользователя и образования</h2>
+
+
+<form method="POST" class = "form-control" enctype="multipart/form-data">
+<input type = "text" name = "name" placeholder="Имя" class="form-control" required> <br>
+<input type = "text" name = "age" placeholder="Возраст" class="form-control" required> <br>
+<input type = "text" name = "city" placeholder="Город" class="form-control" required> <br>
+<input type = "text" name = "education_institution" placeholder="Место обучения" class="form-control" required> <br>
+<input type = "text" name = "graduation_year" placeholder="Год окончания" class="form-control" required> <br>
+<input type = "text" name = "link" placeholder="Ссылка" class="form-control" required> <br>
+<input type = "text" name = "phone" placeholder="Телефон" class="form-control" required> <br>
+<input type = "text" name = "telegram" placeholder="Телеграм" class="form-control" required> <br>
+        <input type="file" name="pic" />
+        <button type = "submit">Отправить</button>
+    </orm>
+</form>
+{%endblock%}

@@ -20,7 +20,7 @@ class User(db.Model):
 class Education(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    institution = db.Column(db.String(100), nullable=False)
+    education_institution = db.Column(db.String(100), nullable=False)
     graduation_year = db.Column(db.Integer, nullable=False)
     link = db.Column(db.String(200), nullable=False, default="/")
 

@@ -32,23 +32,19 @@ def creates():
         filename = secure_filename(pic.filename)
         mimetype = pic.mimetype
         user = User(name=name, age=age, city=city, pic=pic.read(), filename=filename, mimetype=mimetype)
-        education = Education(institution=request.form['education_institution'],
-                              granduation_year=request.form['graduation_year'],
-                              link=request.form['link'],
-                              user=user)
+
         contact = Contact(phone=request.form["phone"],
                           tg=request.form["tg"],
                           user=user)
-        user.education.append(education)
         user.contact.append(contact)
         try:
             db.session.add(user)
             db.session.commit()
             return redirect("/")
-        except:
+        except Exception as error:
             return f'При добавлении поста произошла ошибка: {error}'
-        else:
-            return render_template("create.html")
+    else:
+        return render_template("creates.html")
 
 @app.route("/img/<int:id>")
 def get_img(id):
@@ -64,7 +60,7 @@ def profile(id):
     users = User.query.all()
     educations = user.education.all() if user else None
     contact = user.contact.all() if user else None
-    return render_template('index.html', users=users, user=user, educations=educations)
+    return render_template('index.html', users=users, user=user, educations=educations, contact=contact)
 
 
 @app.route("/")
@@ -74,6 +70,23 @@ def index():
     educations = user.education.all() if user else None
     contact = user.contact.all() if user else None
     return render_template('index.html', users=users, user=user, educations=educations, contact=contact)
+
+@app.route("/<int:id>/education", methods=["GET", "POST"])
+def add_education(id):
+    user = User.query.get(id)
+    if request.method == "POST":
+        education = Education(education_institution=request.form['education_institution'],
+                              graduation_year=request.form['graduation_year'],
+                              link=request.form['link'],
+                              user=user)
+        try:
+            db.session.add(education)
+            db.session.commit()
+            return redirect("/")
+        except Exception as error:
+            return  f'При добавлении поста произошла ошибка: {error}'
+    else:
+        return render_template("education.html")
 
 if __name__ == "__main__":
     app.run(debug=True)

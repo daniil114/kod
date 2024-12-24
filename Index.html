@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {%block title %}{{ user.name }} {% endblock %}
 {% block content %}
-
+{% if user %}
 
 
        <section class="profile">
@@ -73,10 +73,20 @@
            <p>Telegram: Нет</p>
            {% endif %}
        </section>
-
+{% else %}
+<section class="profile">
+<a href="/{{user.id}}/education" class="button-link">Добавить образование</a>
+    </section>
+{% endif %}
 
 
 <script>
 document.getElementById('prev').addEventListener('click', () => {
 document.querySelector('.carousel').scrollBy(-1000, 0); }
 );
+
+document.getElementById('next').addEventListener('click', () => {
+document.querySelector('.carousel').scrollBy(1000, 0); }
+);
+</script>
+{% endblock %}

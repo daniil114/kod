@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{%block title %}{{ user.name }} {%endblock%}
+{%block title %}{{ user.name }} {% endblock %}
 {% block content %}
 
 
@@ -12,11 +12,19 @@
                <p>Возраст: {{ user.age }}</p>
                <p>Город: {{ user.city }}</p>
            </div>
+           {% else %}
+           <img src="../static/img/dog.png" alt="Фотография">
+           <div class="info">
+               <h2>Не найден</h2>
+               <p>Возраст: Нет</p>
+               <p>Город: Нет</p>
+           </div>
+           {% endif %}
        </section>
        <section class="education">
            <h2>Образование</h2>
            {% if user.education %}
-           {% for education in user.educations %}
+           {% for education in user.education %}
            <div class="edublock">
                <p>{{ education.institution }}</p>
                <p>Год окончания: {{education.graduation_year }}</p>
@@ -27,8 +35,6 @@
            <p>Информация о образовании отсутствует</p>
            {% endif %}
        </section>
-
-
       <section class="projects">
           <h2>Проекты</h2>
           <div class="carousel">
@@ -56,10 +62,18 @@
 
 
        <section class="contact">
-           <div class="info">
-               <p>Phone: +7958589774</p>
-           </div>
+       {% if user.education %}
+           {{ for cont in user.contact }}
+           <p>Номер телефона: {{cont.phone}}</p>
+           <p>Telegram: {{ cont.tg }}</p>
+           {% endfor %}
+           {% else %}
+           <p>Номер телефона: Нет</p>
+           <p>Telegram: Нет</p>
+           {% endif %}
        </section>
+
+
 
 <script>
 document.getElementById('prev').addEventListener('click', () => {

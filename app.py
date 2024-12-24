@@ -40,6 +40,7 @@ def creates():
                           tg=request.form["tg"],
                           user=user)
         user.education.append(education)
+        user.contact.append(contact)
         try:
             db.session.add(user)
             db.session.commit()
@@ -62,14 +63,17 @@ def profile(id):
     user = User.query.get(id)
     users = User.query.all()
     educations = user.education.all() if user else None
+    contact = user.contact.all() if user else None
     return render_template('index.html', users=users, user=user, educations=educations)
 
 
 @app.route("/")
 def index():
     user = User.query.first()
+    users = User.query.all()
     educations = user.education.all() if user else None
-    return render_template('index.html', user=user, educations=educations)
+    contact = user.contact.all() if user else None
+    return render_template('index.html', users=users, user=user, educations=educations, contact=contact)
 
 if __name__ == "__main__":
     app.run(debug=True)

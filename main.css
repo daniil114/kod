@@ -162,4 +162,6 @@ select{
     color: white;
     background-color: linear-gradient(#a9bee7, #1c52bb);
 }
-select option
+select option {
+    background-color: #1c52bb;
+}

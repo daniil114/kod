@@ -34,6 +34,7 @@
            {% else %}
            <p>Информация о образовании отсутствует</p>
            {% endif %}
+           <a href="/{{user.id}}/education" class="button-link">Добавить образование</a>
        </section>
       <section class="projects">
           <h2>Проекты</h2>
@@ -63,7 +64,7 @@
 
        <section class="contact">
        {% if user.education %}
-           {{ for cont in user.contact }}
+           {% for cont in contact %}
            <p>Номер телефона: {{cont.phone}}</p>
            <p>Telegram: {{ cont.tg }}</p>
            {% endfor %}
@@ -79,9 +80,3 @@
 document.getElementById('prev').addEventListener('click', () => {
 document.querySelector('.carousel').scrollBy(-1000, 0); }
 );
-
-document.getElementById('next').addEventListener('click', () => {
-document.querySelector('.carousel').scrollBy(1000, 0); }
-);
-</script>
-{% endblock %}

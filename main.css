@@ -165,3 +165,7 @@ select{
 select option {
     background-color: #1c52bb;
 }
+
+.education .button-link {
+width: 180px;
+}

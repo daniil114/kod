@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{%block title %} Добавить проект {% endblock %}
+{% block content %}
+<h2>Добавление проекта</h2>
+
+<form method="POST" class = "form-control" enctype="multipart/form-data">
+<input type = "text" name = "name" placeholder="Название проекта" class="form-control" required> <br>
+<input type = "text" name = "description" placeholder="Описание проекта" class="form-control" required> <br>
+<input type = "text" name = "link" placeholder="Ссылка" class="form-control" required> <br>
+        <form action="/" anctype="multipart/form-data" mathod="post">
+                <input type="file" name="pic" />
+        </form>
+        <button type = "submit">Отправить</button>
+</form>
+{% endblock %}
